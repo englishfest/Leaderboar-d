@@ -414,3 +414,31 @@ function Leaderboard({ data, loading, onPlayerClick }) {
 }
 
 export default Leaderboard;
+import './Filters.css';
+
+function Filters({ timeFilter, setTimeFilter }) {
+  return (
+    <div className="filters">
+      <button 
+        className={timeFilter === 'daily' ? 'active' : ''} 
+        onClick={() => setTimeFilter('daily')}
+      >
+        📅 Günlük
+      </button>
+      <button 
+        className={timeFilter === 'weekly' ? 'active' : ''} 
+        onClick={() => setTimeFilter('weekly')}
+      >
+        📊 Haftalık
+      </button>
+      <button 
+        className={timeFilter === 'all-time' ? 'active' : ''} 
+        onClick={() => setTimeFilter('all-time')}
+      >
+        🏆 Tüm Zamanlar
+      </button>
+    </div>
+  );
+}
+
+export default Filters;
