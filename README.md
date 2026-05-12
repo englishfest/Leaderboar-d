@@ -664,3 +664,101 @@ body {
     flex-direction: column;
   }
 }
+.leaderboard {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.6s ease-out;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+th {
+  padding: 20px;
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 15px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+tbody tr {
+  transition: all 0.3s ease;
+}
+
+tbody tr:hover {
+  background: #f8f9ff;
+}
+
+tbody tr.clickable {
+  cursor: pointer;
+}
+
+tbody tr.clickable:hover {
+  background: #f0f4ff;
+}
+
+.rank {
+  font-weight: bold;
+  color: #667eea;
+  font-size: 1.1rem;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #667eea;
+}
+
+.username {
+  font-weight: 600;
+  color: #333;
+}
+
+.score {
+  color: #764ba2;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  table {
+    font-size: 0.9rem;
+  }
+
+  th, td {
+    padding: 10px;
+  }
+
+  .avatar {
+    width: 35px;
+    height: 35px;
+  }
+}
