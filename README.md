@@ -1038,3 +1038,10 @@ npm run dev
 cd frontend
 npm install
 npm run dev
+git clone https://github.com/englishfestı/game-leaderboard.git
+cd game-leaderboard
+
+# Dosyaları yerleştir (yukarıdaki yapıya göre)
+git add .
+git commit -m "Initial commit: Complete leaderboard system"
+git push origin main
