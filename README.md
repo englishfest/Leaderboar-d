@@ -1002,3 +1002,25 @@ export default defineConfig({
     open: true
   }
 })
+# 🎮 Oyun Leaderboard Sistemi
+
+React + Node.js/Express + PostgreSQL ile geliştirilmiş kapsamlı leaderboard sistemi.
+
+## 🚀 Özellikler
+
+✅ **En Yüksek Puanlar** - Oyuncu sıralamalarını görüntüle
+✅ **Oyuncu Sıralaması** - Gerçek zamanlı ranking
+✅ **Zaman Takibi** - Günlük, Haftalık, Tüm Zamanlar
+✅ **Oyuncu Profili** - Detaylı istatistikler ve puan geçmişi
+✅ **Avatar Sistemi** - Her oyuncunun kendine ait avatar'ı
+✅ **Filtreleme/Sıralama** - Esnek veri görüntüleme seçenekleri
+✅ **Responsive Design** - Mobil ve Desktop uyumlu
+✅ **Gerçek Zamanlı Güncelleme** - Puanlar anında güncellenirse görülür
+
+## 📋 Kurulum
+
+### Backend Kurulumu
+
+```bash
+cd backend
+npm install
