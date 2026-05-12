@@ -80,3 +80,160 @@ const initDB = async () => {
 initDB();
 
 module.exports = pool;
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+require('dotenv').config();
+const leaderboardRoutes = require('./routes/leaderboard');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+
+// Routes
+app.use('/api/leaderboard', leaderboardRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK' });
+});
+
+app.listen(PORT, () => {
+  console.log(`🎮 Server ${PORT} portunda çalışıyor...`);
+});
+const express = require('express');
+const pool = require('../db');
+const router = express.Router();
+
+// Oyuncu oluştur veya var olanı getir
+router.post('/player', async (req, res) => {
+  try {
+    const { username, avatar_url } = req.body;
+    const result = await pool.query(
+      'INSERT INTO players (username, avatar_url) VALUES ($1, $2) ON CONFLICT (username) DO UPDATE SET avatar_url = $2 RETURNING *',
+      [username, avatar_url || 'https://via.placeholder.com/50']
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Puan ekle
+router.post('/score', async (req, res) => {
+  try {
+    const { player_id, score, game_mode } = req.body;
+    const result = await pool.query(
+      'INSERT INTO scores (player_id, score, game_mode) VALUES ($1, $2, $3) RETURNING *',
+      [player_id, score, game_mode || 'classic']
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Tüm zamanlar en yüksek puanlar (Top 100)
+router.get('/all-time', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        p.id, p.username, p.avatar_url,
+        MAX(s.score) as best_score,
+        COUNT(s.id) as total_games,
+        AVG(s.score)::INT as average_score
+      FROM players p
+      LEFT JOIN scores s ON p.id = s.player_id
+      GROUP BY p.id, p.username, p.avatar_url
+      ORDER BY best_score DESC
+      LIMIT 100
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Haftalık en yüksek puanlar
+router.get('/weekly', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        p.id, p.username, p.avatar_url,
+        MAX(s.score) as best_score,
+        COUNT(s.id) as total_games,
+        AVG(s.score)::INT as average_score
+      FROM players p
+      LEFT JOIN scores s ON p.id = s.player_id
+      WHERE s.created_at >= NOW() - INTERVAL '7 days'
+      GROUP BY p.id, p.username, p.avatar_url
+      ORDER BY best_score DESC
+      LIMIT 100
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Günlük en yüksek puanlar
+router.get('/daily', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        p.id, p.username, p.avatar_url,
+        MAX(s.score) as best_score,
+        COUNT(s.id) as total_games,
+        AVG(s.score)::INT as average_score
+      FROM players p
+      LEFT JOIN scores s ON p.id = s.player_id
+      WHERE s.created_at >= NOW() - INTERVAL '1 day'
+      GROUP BY p.id, p.username, p.avatar_url
+      ORDER BY best_score DESC
+      LIMIT 100
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Oyuncu profili
+router.get('/player/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(`
+      SELECT 
+        p.id, p.username, p.avatar_url, p.created_at,
+        COUNT(s.id) as total_games,
+        MAX(s.score) as best_score,
+        AVG(s.score)::INT as average_score,
+        MIN(s.score) as worst_score
+      FROM players p
+      LEFT JOIN scores s ON p.id = s.player_id
+      WHERE p.id = $1
+      GROUP BY p.id, p.username, p.avatar_url, p.created_at
+    `, [id]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Oyuncu puanları (detaylı)
+router.get('/player/:id/scores', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(`
+      SELECT * FROM scores WHERE player_id = $1 ORDER BY created_at DESC
+    `, [id]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;
