@@ -1024,3 +1024,4 @@ React + Node.js/Express + PostgreSQL ile geliştirilmiş kapsamlı leaderboard s
 ```bash
 cd backend
 npm install
+CREATE DATABASE game_leaderboard;
