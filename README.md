@@ -1031,3 +1031,4 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=game_leaderboard
 PORT=5000
+npm run dev
