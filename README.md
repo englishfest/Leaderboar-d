@@ -372,3 +372,45 @@ function App() {
 }
 
 export default App;
+import './Leaderboard.css';
+
+function Leaderboard({ data, loading, onPlayerClick }) {
+  if (loading) return <div className="loading">Yükleniyor...</div>;
+
+  return (
+    <div className="leaderboard">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Avatar</th>
+            <th>Oyuncu Adı</th>
+            <th>En Yüksek Puan</th>
+            <th>Toplam Oyun</th>
+            <th>Ort. Puan</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((player, index) => (
+            <tr key={player.id} onClick={() => onPlayerClick(player.id)} className="clickable">
+              <td className="rank">{index + 1}</td>
+              <td>
+                <img 
+                  src={player.avatar_url} 
+                  alt={player.username} 
+                  className="avatar"
+                />
+              </td>
+              <td className="username">{player.username}</td>
+              <td className="score">{player.best_score || 0}</td>
+              <td>{player.total_games || 0}</td>
+              <td>{player.average_score || 0}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default Leaderboard;
