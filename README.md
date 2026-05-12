@@ -262,3 +262,113 @@ PORT=5000
     "vite": "^4.4.0"
   }
 }
+import { useState, useEffect } from 'react';
+import Leaderboard from './components/Leaderboard';
+import PlayerProfile from './components/PlayerProfile';
+import Filters from './components/Filters';
+import axios from 'axios';
+import './App.css';
+
+const API_URL = 'http://localhost:5000/api/leaderboard';
+
+function App() {
+  const [timeFilter, setTimeFilter] = useState('all-time');
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [newScore, setNewScore] = useState({ username: '', score: '' });
+
+  // Leaderboard verilerini çek
+  const fetchLeaderboard = async (filter) => {
+    setLoading(true);
+    try {
+      const endpoint = filter === 'all-time' ? '/all-time' : `/${filter}`;
+      const response = await axios.get(`${API_URL}${endpoint}`);
+      setLeaderboardData(response.data);
+    } catch (err) {
+      console.error('Leaderboard yüklenirken hata:', err);
+    }
+    setLoading(false);
+  };
+
+  // Puan ekle
+  const addScore = async (e) => {
+    e.preventDefault();
+    if (!newScore.username || !newScore.score) return;
+
+    try {
+      // Oyuncuyu oluştur/getir
+      const playerRes = await axios.post(`${API_URL}/player`, {
+        username: newScore.username,
+        avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newScore.username}`
+      });
+
+      // Puanı ekle
+      await axios.post(`${API_URL}/score`, {
+        player_id: playerRes.data.id,
+        score: parseInt(newScore.score),
+        game_mode: 'classic'
+      });
+
+      // Leaderboard'u yenile
+      fetchLeaderboard(timeFilter);
+      setNewScore({ username: '', score: '' });
+    } catch (err) {
+      console.error('Puan eklenirken hata:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeaderboard(timeFilter);
+  }, [timeFilter]);
+
+  return (
+    <div className="app">
+      <header className="header">
+        <h1>🎮 Oyun Leaderboard'u</h1>
+        <p>En yüksek puanları ve oyuncu sıralamalarını görüntüle</p>
+      </header>
+
+      <div className="container">
+        {/* Puan Ekleme Formu */}
+        <div className="add-score-section">
+          <h2>Puan Ekle</h2>
+          <form onSubmit={addScore}>
+            <input
+              type="text"
+              placeholder="Oyuncu adı"
+              value={newScore.username}
+              onChange={(e) => setNewScore({ ...newScore, username: e.target.value })}
+            />
+            <input
+              type="number"
+              placeholder="Puan"
+              value={newScore.score}
+              onChange={(e) => setNewScore({ ...newScore, score: e.target.value })}
+            />
+            <button type="submit">Ekle</button>
+          </form>
+        </div>
+
+        {/* Filtreler */}
+        <Filters timeFilter={timeFilter} setTimeFilter={setTimeFilter} />
+
+        {/* Leaderboard */}
+        {selectedPlayer ? (
+          <PlayerProfile 
+            playerId={selectedPlayer} 
+            onBack={() => setSelectedPlayer(null)}
+          />
+        ) : (
+          <Leaderboard 
+            data={leaderboardData} 
+            loading={loading}
+            onPlayerClick={setSelectedPlayer}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
