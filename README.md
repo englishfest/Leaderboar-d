@@ -442,3 +442,96 @@ function Filters({ timeFilter, setTimeFilter }) {
 }
 
 export default Filters;
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import './PlayerProfile.css';
+
+const API_URL = 'http://localhost:5000/api/leaderboard';
+
+function PlayerProfile({ playerId, onBack }) {
+  const [player, setPlayer] = useState(null);
+  const [scores, setScores] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [playerRes, scoresRes] = await Promise.all([
+          axios.get(`${API_URL}/player/${playerId}`),
+          axios.get(`${API_URL}/player/${playerId}/scores`)
+        ]);
+        setPlayer(playerRes.data);
+        setScores(scoresRes.data);
+      } catch (err) {
+        console.error('Profil yüklenirken hata:', err);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [playerId]);
+
+  if (loading) return <div className="loading">Yükleniyor...</div>;
+  if (!player) return <div className="error">Oyuncu bulunamadı</div>;
+
+  return (
+    <div className="player-profile">
+      <button onClick={onBack} className="back-btn">← Geri</button>
+      
+      <div className="profile-header">
+        <img src={player.avatar_url} alt={player.username} className="large-avatar" />
+        <div className="profile-info">
+          <h2>{player.username}</h2>
+          <p>Katılım: {new Date(player.created_at).toLocaleDateString('tr-TR')}</p>
+        </div>
+      </div>
+
+      <div className="stats-grid">
+        <div className="stat">
+          <label>En Yüksek Puan</label>
+          <span>{player.best_score || 0}</span>
+        </div>
+        <div className="stat">
+          <label>En Düşük Puan</label>
+          <span>{player.worst_score || 0}</span>
+        </div>
+        <div className="stat">
+          <label>Ort. Puan</label>
+          <span>{player.average_score || 0}</span>
+        </div>
+        <div className="stat">
+          <label>Toplam Oyun</label>
+          <span>{player.total_games || 0}</span>
+        </div>
+      </div>
+
+      <div className="scores-history">
+        <h3>Puan Geçmişi</h3>
+        {scores.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>Puan</th>
+                <th>Mod</th>
+                <th>Tarih</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scores.map((score) => (
+                <tr key={score.id}>
+                  <td className="score">{score.score}</td>
+                  <td>{score.game_mode}</td>
+                  <td>{new Date(score.created_at).toLocaleString('tr-TR')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>Henüz puan kaydı yok</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default PlayerProfile;
